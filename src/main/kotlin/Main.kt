@@ -1,65 +1,41 @@
 import arrow.continuations.SuspendApp
-import arrow.fx.coroutines.ResourceScope
 import arrow.fx.coroutines.resourceScope
 import kafka.AdminSettings.Companion.adminSettings
-import kafka.StreamsSettings
 import kafka.StreamsSettings.Companion.streamsSettings
 import kafka.adminClient
-import kafka.startAndWait
+import kafka.kafkaStreams
+import kafka.topologies.addTestTopology
 import kotlinx.coroutines.awaitCancellation
 import org.apache.kafka.clients.admin.NewTopic
-import org.apache.kafka.streams.KafkaStreams
-import org.apache.kafka.streams.StreamsBuilder
-import org.apache.kafka.streams.Topology
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import utils.LoggingContext
 import java.lang.invoke.MethodHandles
-import java.time.Duration
 
+val loggingContext = object : LoggingContext {
+    override val logger: Logger
+        get() = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass())
+}
 
 fun main() = SuspendApp {
-    val context = object : LoggingContext {
-        override val logger: Logger
-            get() = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass())
-    }
-
-    adminSettings().onRight { settings ->
-        adminClient(settings) {
-            createTopics(
-                listOf(
-                    NewTopic("foo", 1, 1),
-                    NewTopic("bar", 1, 1),
-                )
+    adminClient(adminSettings()) {
+        createTopics(
+            listOf(
+                NewTopic("foo", 1, 1),
+                NewTopic("bar", 1, 1),
             )
-        }
+        )
     }
 
-    with(context) {
-        resourceScope {
-            streamsSettings().onRight { settings ->
-                kafkaStreams(settings) {
-                    stream<String, String>("foo")
-                        .peek { key, value -> println("Received record on 'foo': [key=$key] [value=$value]") }
-                        .to("bar")
-                }
+    // TODO: Figure out a way to inline the resourceScope and loggingContext
+    resourceScope {
+        with(loggingContext) {
+            kafkaStreams(streamsSettings()) {
+                addTestTopology()
             }
-            awaitCancellation()
         }
+
+        awaitCancellation()
     }
 }
 
-context(LoggingContext)
-suspend fun ResourceScope.kafkaStreams(settings: StreamsSettings, builder: StreamsBuilder.() -> Unit): KafkaStreams =
-    install({
-        val topology: Topology = StreamsBuilder().also { builder(it) }.build()
-        KafkaStreams(topology, settings.properties()).also {
-            logger.info("Starting kafka-streams.")
-            it.startAndWait()
-            logger.info("Kafka-streams started.")
-        }
-    }) { k, e ->
-        logger.info("ExitCode $e received, closing kafka-streams.")
-        k.close(Duration.ofMillis(30_000))
-        logger.info("Streams closed successfully")
-    }

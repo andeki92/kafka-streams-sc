@@ -1,7 +1,5 @@
 package kafka
 
-import arrow.core.Either
-import arrow.core.raise.either
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsConfig
@@ -15,14 +13,12 @@ data class StreamsSettings(
     private val props: Properties? = null
 ) {
     companion object {
-        fun streamsSettings(): Either<String, StreamsSettings> = either {
-            StreamsSettings(
-                applicationId = "kafka-poc-sc",
-                boostrapServer = "localhost:9092",
-                defaultKeySerde = Serdes.String(),
-                defaultValueSerde = Serdes.String(),
-            )
-        }
+        fun streamsSettings(): StreamsSettings = StreamsSettings(
+            applicationId = "kafka-poc-sc",
+            boostrapServer = "localhost:9092",
+            defaultKeySerde = Serdes.String(),
+            defaultValueSerde = Serdes.String(),
+        )
     }
 
     fun properties(): Properties = Properties().apply {
