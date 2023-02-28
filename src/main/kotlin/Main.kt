@@ -1,13 +1,12 @@
 import arrow.continuations.SuspendApp
 import arrow.fx.coroutines.ResourceScope
 import arrow.fx.coroutines.resourceScope
-import kafka.AdminSettings
 import kafka.AdminSettings.Companion.adminSettings
 import kafka.StreamsSettings
 import kafka.StreamsSettings.Companion.streamsSettings
+import kafka.adminClient
 import kafka.startAndWait
 import kotlinx.coroutines.awaitCancellation
-import org.apache.kafka.clients.admin.AdminClient
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
@@ -27,10 +26,12 @@ fun main() = SuspendApp {
 
     adminSettings().onRight { settings ->
         adminClient(settings) {
-            createTopics(listOf(
-                NewTopic("foo", 1, 1),
-                NewTopic("bar", 1, 1),
-            ))
+            createTopics(
+                listOf(
+                    NewTopic("foo", 1, 1),
+                    NewTopic("bar", 1, 1),
+                )
+            )
         }
     }
 
@@ -55,7 +56,6 @@ suspend fun ResourceScope.kafkaStreams(settings: StreamsSettings, builder: Strea
         KafkaStreams(topology, settings.properties()).also {
             logger.info("Starting kafka-streams.")
             it.startAndWait()
-        }.also {
             logger.info("Kafka-streams started.")
         }
     }) { k, e ->
@@ -63,6 +63,3 @@ suspend fun ResourceScope.kafkaStreams(settings: StreamsSettings, builder: Strea
         k.close(Duration.ofMillis(30_000))
         logger.info("Streams closed successfully")
     }
-
-fun adminClient(settings: AdminSettings, block: AdminClient.() -> Unit): Unit =
-    AdminClient.create(settings.properties()).use { block(it) }
