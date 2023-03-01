@@ -24,6 +24,7 @@ dependencies {
     implementation(libs.bundles.ktor.server)
     implementation(libs.kafka.streams)
     implementation(libs.logback)
+    implementation(libs.kotlinx.datetime)
 
     testImplementation(libs.bundles.kotest)
 }

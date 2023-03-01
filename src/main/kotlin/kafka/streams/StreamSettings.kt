@@ -1,19 +1,32 @@
-package kafka
+package kafka.streams
+
 
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsConfig
 import java.util.*
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 data class StreamsSettings(
-    val applicationId: String,
-    val boostrapServer: String,
-    val defaultKeySerde: Serde<*> = Serdes.String(),
-    val defaultValueSerde: Serde<*> = Serdes.String(),
-    private val props: Properties? = null
+    private val applicationId: String,
+    private val boostrapServer: String,
+    private val defaultKeySerde: Serde<*> = Serdes.String(),
+    private val defaultValueSerde: Serde<*> = Serdes.String(),
+    private val props: Properties? = null,
+
+    /* Startup configurations */
+    val startupTimeout: Duration = 30.seconds,
+
+    /* Shutdown configurations */
+    val gracefulShutdownTimeout: Duration = 2.minutes,
+    val leaveGroup: Boolean = true,
 ) {
     companion object {
-        fun streamsSettings(): StreamsSettings = StreamsSettings(
+
+        // TODO: Load from application.yaml or similar
+        fun defaultStreamSettings(): StreamsSettings = StreamsSettings(
             applicationId = "kafka-poc-sc",
             boostrapServer = "localhost:9092",
             defaultKeySerde = Serdes.String(),
