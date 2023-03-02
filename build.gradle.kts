@@ -27,6 +27,7 @@ dependencies {
     implementation(libs.kotlinx.datetime)
 
     testImplementation(libs.bundles.kotest)
+    testImplementation(libs.kafka.streams.test)
 }
 
 tasks.test {

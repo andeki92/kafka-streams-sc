@@ -8,9 +8,9 @@ kover = "0.6.1"
 detekt = "1.22.0"
 ktor = "2.2.3"
 suspendapp = "0.4.0"
-kafka = "3.4.0"
 logback = "1.4.5"
 kotlinx-datetime = "0.4.0"
+kafka = "3.4.0"
 
 [libraries]
 arrow-fx = { module = "io.arrow-kt:arrow-fx-coroutines", version.ref = "arrow" }
@@ -20,6 +20,7 @@ coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotest-assertionsCore = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 kotest-frameworkEngine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
+kotest-frameworkEngineJvm = { module = "io.kotest:kotest-framework-engine-jvm", version.ref = "kotest" }
 kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
 kotest-runnerJUnit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
@@ -39,6 +40,7 @@ ktor-server-html = { module = "io.ktor:ktor-server-html-builder", version.ref = 
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 detekt-gradle = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
 kafka-streams = { module = "org.apache.kafka:kafka-streams", version.ref = "kafka" }
+kafka-streams-test = { module = "org.apache.kafka:kafka-streams-test-utils", version.ref = "kafka" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 
 [bundles]
@@ -57,6 +59,7 @@ ktor-client = [
 kotest = [
     "kotest-assertionsCore",
     "kotest-frameworkEngine",
+    "kotest-frameworkEngineJvm",
     "kotest-property",
 ]
 

@@ -18,7 +18,10 @@ import kotlin.time.toJavaDuration
  * gracefully shutdown down the stream again. Configuration parameters are handled by the [StreamsSettings].
  */
 context(LoggingContext)
-suspend fun ResourceScope.kafkaStreams(settings: StreamsSettings, block: StreamsBuilder.() -> Unit): KafkaStreams =
+suspend fun ResourceScope.kafkaStreams(
+    settings: StreamsSettings = StreamsSettings.defaultStreamSettings(),
+    block: StreamsBuilder.() -> Unit
+): KafkaStreams =
     install({
         val topology: Topology = StreamsBuilder().also { block(it) }.build()
         KafkaStreams(topology, settings.properties()).also { it.startAndWait(settings) }
@@ -35,7 +38,7 @@ context(LoggingContext)
 private fun KafkaStreams.startAndWait(settings: StreamsSettings) {
     configure(settings)
 
-    val streamsStartupTime  = Clock.System.now()
+    val streamsStartupTime = Clock.System.now()
 
     logger.info("Starting Kafka Streams @$streamsStartupTime")
 
@@ -70,7 +73,8 @@ context(LoggingContext)
 private fun KafkaStreams.closeAndWait(settings: StreamsSettings) = runCatching {
     logger.info("Closing kafka-streams [leaveGroup=${settings.leaveGroup}] [timeout=${settings.gracefulShutdownTimeout}]")
     close(
-        KafkaStreams.CloseOptions().leaveGroup(settings.leaveGroup).timeout(settings.gracefulShutdownTimeout.toJavaDuration())
+        KafkaStreams.CloseOptions().leaveGroup(settings.leaveGroup)
+            .timeout(settings.gracefulShutdownTimeout.toJavaDuration())
     )
     Thread.sleep(10) // this is only to provide correctly ordered logging
     logger.info("Kafka-streams successfully closed.")
